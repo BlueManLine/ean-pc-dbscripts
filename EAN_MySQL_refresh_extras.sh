@@ -10,7 +10,7 @@
 STARTTIME=$(date +%s)
 #
 MYSQL_DIR=/usr/bin/
-# for simplicity I added the MYSQL bin path to the Windows 
+# for simplicity I added the MYSQL bin path to the Windows
 # path environment variable, for Windows set it to ""
 #MYSQL_DIR=""
 #MySQL user, password, host (Server)

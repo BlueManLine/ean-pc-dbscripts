@@ -8,7 +8,7 @@ use eanprod;
 ##################################################################
 ## STEP 1 - Save Old records
 ## must be called BEFORE refreshing activepropertylist
-## will create a copy of activepropertylist 
+## will create a copy of activepropertylist
 ## that we later use to analize what has changed
 ##################################################################
 # creates the table the same as original so the LowRate / HighRate will be there
@@ -17,9 +17,9 @@ DELIMITER $$
 CREATE PROCEDURE sp_log_createcopy()
 BEGIN
 DROP TABLE IF EXISTS oldactivepropertylist;
-CREATE TABLE oldactivepropertylist LIKE eanprod.activepropertylist;
-INSERT oldactivepropertylist SELECT * FROM eanprod.activepropertylist;
-END 
+CREATE TABLE oldactivepropertylist LIKE activepropertylist;
+INSERT oldactivepropertylist SELECT * FROM activepropertylist;
+END
 $$
 DELIMITER ;
 
@@ -58,7 +58,7 @@ RIGHT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID > @max_eanid;
 
-END 
+END
 $$
 DELIMITER ;
 
@@ -79,7 +79,7 @@ FROM oldactivepropertylist AS OLD
 LEFT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE NOW.EANHotelID IS NULL;
-END 
+END
 $$
 DELIMITER ;
 
@@ -143,7 +143,7 @@ BEGIN
   DECLARE oChainCodeID VARCHAR(5);
   DECLARE oHighRate,oLowRate NUMERIC(19,4);
   DECLARE oCheckInTime,oCheckOutTime VARCHAR(10);
-  
+
   DECLARE nEANHotelID,nPropertyCategory INT;
   DECLARE nName VARCHAR(70);
   DECLARE nAddress1,nAddress2,nCity VARCHAR(50);
@@ -155,13 +155,13 @@ BEGIN
   DECLARE nChainCodeID VARCHAR(5);
   DECLARE nHighRate,nLowRate NUMERIC(19,4);
   DECLARE nCheckInTime,nCheckOutTime VARCHAR(10);
-  
+
   DECLARE cur CURSOR FOR SELECT o.EANHotelID,o.Name,o.Address1,o.Address2,o.City,o.StateProvince,o.PostalCode,o.Country,
 		o.Latitude,o.Longitude,o.AirportCode,o.PropertyCategory,o.PropertyCurrency,
 		o.SupplierType,o.Location,o.ChainCodeID,o.HighRate,o.LowRate,o.CheckInTime,o.CheckOutTime,
 	    n.EANHotelID,n.Name,n.Address1,n.Address2,n.City,n.StateProvince,n.PostalCode,n.Country,
 		n.Latitude,n.Longitude,n.AirportCode,n.PropertyCategory,n.PropertyCurrency,
-		n.SupplierType,n.Location,n.ChainCodeID,n.HighRate,n.LowRate,n.CheckInTime,n.CheckOutTime FROM eanprod.oldactivepropertylist AS o
+		n.SupplierType,n.Location,n.ChainCodeID,n.HighRate,n.LowRate,n.CheckInTime,n.CheckOutTime FROM oldactivepropertylist AS o
 		LEFT JOIN activepropertylist AS n ON o.EANHotelID=n.EANHotelID;
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -177,79 +177,79 @@ BEGIN
       LEAVE read_loop;
     END IF;
     IF oName != nName THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Name','VARCHAR(70)',oName,nName);
     END IF;
     IF oAddress1 != nAddress1 THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Address1','VARCHAR(50)',oAddress1,nAddress1);
     END IF;
     IF oAddress2 != nAddress2 THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Address2','VARCHAR(50)',oAddress2,nAddress2);
     END IF;
     IF oCity != nCity THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'City','VARCHAR(50)',oCity,nCity);
     END IF;
     IF oStateProvince != nStateProvince THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'StateProvince','VARCHAR(2)',oStateProvince,nStateProvince);
     END IF;
     IF oPostalCode != nPostalCode THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PostalCode','VARCHAR(15)',oPostalCode,nPostalCode);
     END IF;
     IF oCountry != nCountry THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Country','VARCHAR(2)',oCountry,nCountry);
     END IF;
     IF oLatitude != nLatitude THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Latitude','NUMERIC(8,2)',oLatitude,nLatitude);
     END IF;
     IF oLongitude != nLongitude THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Longitude','NUMERIC(8,2)',oLongitude,nLongitude);
     END IF;
     IF oAirportCode != nAirportCode THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'AirportCode','VARCHAR(3)',oAirportCode,nAirportCode);
     END IF;
     IF oPropertyCategory != nPropertyCategory THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PropertyCategory','INT',oPropertyCategory,nPropertyCategory);
     END IF;
     IF oPropertyCurrency != nPropertyCurrency THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PropertyCurrency','VARCHAR(3)',oPropertyCurrency,nPropertyCurrency);
     END IF;
     IF oSupplierType != nSupplierType THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'SupplierType','VARCHAR(3)',oSupplierType,nSupplierType);
     END IF;
     IF oLocation != nLocation THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Location','VARCHAR(80)',oLocation,nLocation);
-    END IF; 
+    END IF;
     IF oChainCodeID != nChainCodeID THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'ChainCodeID','VARCHAR(5)',oChainCodeID,nChainCodeID);
     END IF;
     IF oHighRate != nHighRate THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'HighRate','NUMERIC(19,4)',oHighRate,nHighRate);
     END IF;
     IF oLowRate != nLowRate THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'LowRate','NUMERIC(19,4)',oLowRate,nLowRate);
     END IF;
     IF oCheckInTime != nCheckInTime THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'CheckInTime','VARCHAR(10)',oCheckInTime,nCheckInTime);
     END IF;
     IF oCheckOutTime != nCheckOutTime THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'CheckOutTime','VARCHAR(10)',oCheckOutTime,nCheckOutTime);
     END IF;
 

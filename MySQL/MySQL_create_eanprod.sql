@@ -4,7 +4,7 @@
 ## BE CAREFUL AS IT WILL ERASE THE EXISTING DATABASE  ##
 ## YOU CAN USE SECTIONS OF IT TO RE-CREATE TABLES     ##
 ## WILL CREATE USER: eanuser / expedia                ##
-## table names are lowercase so it will work  in all  ## 
+## table names are lowercase so it will work  in all  ##
 ## platforms the same.                                ##
 ########################################################
 ##
@@ -98,7 +98,7 @@ CREATE TABLE pointsofinterestcoordinateslist
 (
 	RegionID INT NOT NULL,
 	RegionName VARCHAR(255),
-## as it will be the key need to be less than 767 bytes (767 / 4 = 191.75)  
+## as it will be the key need to be less than 767 bytes (767 / 4 = 191.75)
 	RegionNameLong VARCHAR(191),
 	Latitude numeric(9,6),
 	Longitude numeric(9,6),
@@ -272,7 +272,7 @@ CREATE INDEX idx_propertyattributelink_reverse ON propertyattributelink(Attribut
 
 
 ########### Image Data ####################
-## there are multiple images for an hotel 
+## there are multiple images for an hotel
 ## even with the same caption
 ## to make a unique index we need to use
 ## the URL instead
@@ -509,15 +509,15 @@ CREATE INDEX activemodel_regionid ON activepropertybusinessmodel(RegionID);
 ## CALL sp_hotels_from_point(40.740984,-74.007500,5); ## meat-packing district
 ##
 ## Some Cities Coordinates (http://gael-varoquaux.info/blog/wp-content/uploads/2008/12/cities.txt)
-## Cape Town	-33.93	18.46	
-## Sao Paulo	-23.53	-46.63	
-## Moscow		55.75	37.62	
-## Seoul		37.56	126.99	
-## Tokyo		35.67	139.77	
-## Mexico City	19.43	-99.14	
-## New York		40.67	-73.94	
-## Las Vegas	36.21	-115.22	
-## Los Angeles	34.11	-118.41	
+## Cape Town	-33.93	18.46
+## Sao Paulo	-23.53	-46.63
+## Moscow		55.75	37.62
+## Seoul		37.56	126.99
+## Tokyo		35.67	139.77
+## Mexico City	19.43	-99.14
+## New York		40.67	-73.94
+## Las Vegas	36.21	-115.22
+## Los Angeles	34.11	-118.41
 ##
 ## Santiago Bernabeu Stadium 40.451585,-3.690375
 ##
@@ -529,16 +529,16 @@ BEGIN
 SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,
 	   PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,
 # this calculate the distance from the given longitude, latitude
-    sqrt( 
-        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) + 
-        (POW(a.Longitude - lon, 2) * 53.1 * 53.1) 
+    sqrt(
+        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) +
+        (POW(a.Longitude - lon, 2) * 53.1 * 53.1)
      ) AS distance
-FROM activepropertylist AS a 
+FROM activepropertylist AS a
 WHERE 1=1
 HAVING distance < maxdist
 ORDER BY distance ASC;
 # to use LIMIT you need to use a prepared statement to avoid errors
-END 
+END
 $$
 DELIMITER ;
 ##################################################################
@@ -551,15 +551,15 @@ DELIMITER $$
 CREATE PROCEDURE sp_hotels_from_point_restrict(IN lat double,lon double, maxdist int, country varchar(200), city varchar(200))
 BEGIN
 SET @s = CONCAT('SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM activepropertylist AS a ',
                 ' WHERE Country=\'',country,'\' AND City=\'',city,
                 '\' HAVING distance < ',maxdist,
                 ' ORDER BY distance ASC;');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -572,15 +572,15 @@ DELIMITER $$
 CREATE PROCEDURE sp_hotels_from_point_restrict_postal(IN lat double,lon double, maxdist int, postalcode varchar(60))
 BEGIN
 SET @s = CONCAT('SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM activepropertylist AS a ',
                 ' WHERE REPLACE(PostalCode," ","")=\'',postalcode,
                 '\' HAVING distance < ',maxdist,
                 ' ORDER BY distance ASC;');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -596,14 +596,14 @@ DELIMITER $$
 CREATE PROCEDURE sp_airport_from_point(IN lat double,lon double,countrycode VARCHAR(2),maxrec INT)
 BEGIN
 SET @s = CONCAT('SELECT AirportID,AirportCode,AirportName,CountryCode,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM airportcoordinateslist AS a ',
 				 ' WHERE CountryCode=','\'',countrycode,'\'',' AND AirportName NOT LIKE \'%Heliport%\' AND AirportName NOT LIKE \'%Train%\'',
                 ' ORDER BY distance ASC LIMIT ',maxrec,';');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -620,16 +620,16 @@ CREATE PROCEDURE sp_pois_from_point(IN lat double,lon double, maxdist int)
 BEGIN
 SELECT RegionNameLong,RegionName,
 # this calculate the distance from the given longitude, latitude
-    round( sqrt( 
-        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) + 
-        (POW(a.Longitude - lon, 2) * 53.1 * 53.1) 
+    round( sqrt(
+        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) +
+        (POW(a.Longitude - lon, 2) * 53.1 * 53.1)
      )) AS distance
-FROM pointsofinterestcoordinateslist AS a 
+FROM pointsofinterestcoordinateslist AS a
 WHERE 1=1
 HAVING distance < maxdist
 ORDER BY distance ASC;
 # to use LIMIT you need to use a prepared statement to avoid errors
-END 
+END
 $$
 DELIMITER ;
 
@@ -662,7 +662,7 @@ CREATE INDEX log_activeproperties ON log_activeproperty_changes(TimeStamp, EANHo
 ##################################################################
 ## STEP 1 - Save Old records
 ## must be called BEFORE refreshing activepropertybusinessmodel
-## will create a copy of activepropertybusinessmodel 
+## will create a copy of activepropertybusinessmodel
 ## that we later use to analize what has changed
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_createcopy;
@@ -670,9 +670,9 @@ DELIMITER $$
 CREATE PROCEDURE sp_log_createcopy()
 BEGIN
 DROP TABLE IF EXISTS oldactivepropertylist;
-CREATE TABLE oldactivepropertylist LIKE eanprod.activepropertybusinessmodel;
-INSERT oldactivepropertylist SELECT * FROM eanprod.activepropertybusinessmodel;
-END 
+CREATE TABLE oldactivepropertylist LIKE activepropertybusinessmodel;
+INSERT oldactivepropertylist SELECT * FROM activepropertybusinessmodel;
+END
 $$
 DELIMITER ;
 
@@ -711,7 +711,7 @@ RIGHT JOIN activepropertybusinessmodel AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID > @max_eanid;
 
-END 
+END
 $$
 DELIMITER ;
 
@@ -732,7 +732,7 @@ FROM oldactivepropertylist AS OLD
 LEFT JOIN activepropertybusinessmodel AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE NOW.EANHotelID IS NULL;
-END 
+END
 $$
 DELIMITER ;
 
@@ -791,7 +791,7 @@ BEGIN
   DECLARE oLatitude,oLongitude NUMERIC(8,5);
   DECLARE oAirportCode,oPropertyCurrency,oSupplierType VARCHAR(3);
   DECLARE oChainCodeID INT;
-  
+
   DECLARE nEANHotelID,nPropertyCategory,nBusinessModelMask INT;
   DECLARE nName VARCHAR(70);
   DECLARE nAddress1,nAddress2,nCity VARCHAR(50);
@@ -800,14 +800,14 @@ BEGIN
   DECLARE nLatitude,nLongitude NUMERIC(8,5);
   DECLARE nAirportCode,nPropertyCurrency,nSupplierType VARCHAR(3);
   DECLARE nChainCodeID INT;
-  
+
   DECLARE cur CURSOR FOR SELECT o.EANHotelID,o.Name,o.Address1,o.Address2,o.City,o.StateProvince,o.PostalCode,o.Country,
 		o.Latitude,o.Longitude,o.AirportCode,o.PropertyCategory,o.PropertyCurrency,
 		o.SupplierType,o.ChainCodeID,o.BusinessModelMask,
 	    n.EANHotelID,n.Name,n.Address1,n.Address2,n.City,n.StateProvince,n.PostalCode,n.Country,
 		n.Latitude,n.Longitude,n.AirportCode,n.PropertyCategory,n.PropertyCurrency,
 		n.SupplierType,n.ChainCodeID,n.BusinessModelMask
-		FROM eanprod.oldactivepropertylist AS o
+		FROM oldactivepropertylist AS o
 		LEFT JOIN activepropertybusinessmodel AS n ON o.EANHotelID=n.EANHotelID;
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -823,71 +823,71 @@ BEGIN
       LEAVE read_loop;
     END IF;
     IF oName != nName THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Name','VARCHAR(70)',oName,nName);
     END IF;
     IF oAddress1 != nAddress1 THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Address1','VARCHAR(50)',oAddress1,nAddress1);
     END IF;
     IF oAddress2 != nAddress2 THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Address2','VARCHAR(50)',oAddress2,nAddress2);
     END IF;
     IF oCity != nCity THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'City','VARCHAR(50)',oCity,nCity);
     END IF;
     IF oStateProvince != nStateProvince THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'StateProvince','VARCHAR(2)',oStateProvince,nStateProvince);
     END IF;
     IF oPostalCode != nPostalCode THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PostalCode','VARCHAR(15)',oPostalCode,nPostalCode);
     END IF;
     IF oCountry != nCountry THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Country','VARCHAR(2)',oCountry,nCountry);
     END IF;
     IF oLatitude != nLatitude THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Latitude','NUMERIC(8,2)',oLatitude,nLatitude);
     END IF;
     IF oLongitude != nLongitude THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Longitude','NUMERIC(8,2)',oLongitude,nLongitude);
     END IF;
     IF oAirportCode != nAirportCode THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'AirportCode','VARCHAR(3)',oAirportCode,nAirportCode);
     END IF;
     IF oPropertyCategory != nPropertyCategory THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PropertyCategory','INT',oPropertyCategory,nPropertyCategory);
     END IF;
     IF oPropertyCurrency != nPropertyCurrency THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PropertyCurrency','VARCHAR(3)',oPropertyCurrency,nPropertyCurrency);
     END IF;
     IF oSupplierType = 'GDS' AND nSupplierType = 'ESR' THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'EANHotelID','INT','moved to ESR','added record');      
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      VALUES (nEANHotelID,'EANHotelID','INT','moved to ESR','added record');
     END IF;
     IF oSupplierType = 'ESR' AND nSupplierType = 'GDS' THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'EANHotelID','INT','moved to GDS','stop-sell record');      
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      VALUES (nEANHotelID,'EANHotelID','INT','moved to GDS','stop-sell record');
       END IF;
     IF oSupplierType != nSupplierType THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'SupplierType','VARCHAR(3)',oSupplierType,nSupplierType);
-    END IF; 
+    END IF;
     IF oChainCodeID != nChainCodeID THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'ChainCodeID','INT',oChainCodeID,nChainCodeID);
     END IF;
     IF oBusinessModelMask != nBusinessModelMask THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'BusinessModelMask','INT',oBusinessModelMask,nBusinessModelMask);
     END IF;
 
@@ -939,7 +939,7 @@ BEGIN
     END WHILE;
   END IF;
   RETURN c;
-END 
+END
 $$
 DELIMITER ;
 
@@ -951,19 +951,19 @@ DELIMITER $$
 CREATE FUNCTION LEVENSHTEIN_RATIO( s1 text, s2 text )
 RETURNS INT(11)
 DETERMINISTIC
-BEGIN 
-    DECLARE s1_len, s2_len, max_len INT; 
-    SET s1_len = LENGTH(s1), s2_len = LENGTH(s2); 
-    IF s1_len > s2_len THEN  
-      SET max_len = s1_len;  
-    ELSE  
-      SET max_len = s2_len;  
-    END IF; 
-    RETURN ROUND((1 - LEVENSHTEIN(s1, s2) / max_len) * 100); 
+BEGIN
+    DECLARE s1_len, s2_len, max_len INT;
+    SET s1_len = LENGTH(s1), s2_len = LENGTH(s2);
+    IF s1_len > s2_len THEN
+      SET max_len = s1_len;
+    ELSE
+      SET max_len = s2_len;
+    END IF;
+    RETURN ROUND((1 - LEVENSHTEIN(s1, s2) / max_len) * 100);
 END
 $$
 DELIMITER ;
-  
+
 ##################################################################
 ## CAP_FIRST Formula - Uppercase Just The First Letter
 ## used to normalize data cases
@@ -973,7 +973,7 @@ DELIMITER ;
 DROP FUNCTION IF EXISTS CAP_FIRST;
 DELIMITER $$
 CREATE FUNCTION CAP_FIRST (input VARCHAR(255))
-RETURNS VARCHAR(255) 
+RETURNS VARCHAR(255)
 DETERMINISTIC
 BEGIN
 	DECLARE len INT;
@@ -994,12 +994,12 @@ BEGIN
 		SET i = i + 1;
 	END WHILE;
 	RETURN input;
-END 
+END
 $$
 DELIMITER ;
 
 #####################################################################
-## REGION_NAME_CLEAN - Eliminate all '(something)' from a string 
+## REGION_NAME_CLEAN - Eliminate all '(something)' from a string
 ## used to eliminate things like '(type 7)' or '(and vicinity)' from
 ## Region Names.
 ## EXAMPLE
@@ -1036,23 +1036,23 @@ CREATE FUNCTION EXTRACT_ADDRESS_PART( source VARCHAR(65535), part VARCHAR(65535)
 RETURNS VARCHAR(65535)
 DETERMINISTIC
 BEGIN
-DECLARE part_out VARCHAR(65535);  
-    IF BINARY STRING_SPLIT(source,',',3) != BINARY '' THEN  
+DECLARE part_out VARCHAR(65535);
+    IF BINARY STRING_SPLIT(source,',',3) != BINARY '' THEN
        IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',1); END IF;
        IF part = 'StateProvince' THEN SET part_out = STRING_SPLIT(source,',',2); END IF;
        IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',3); END IF;
-    ELSE  
+    ELSE
        IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',1); END IF;
        IF part = 'StateProvince' THEN SET part_out = NULL;                       END IF;
-       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',2); END IF;      
-    END IF; 
+       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',2); END IF;
+    END IF;
     RETURN part_out;
 END
 $$
 DELIMITER ;
 
 #####################################################################
-## REGION_NAME_CHANGE - Replace all '(something)' from a string to '(other)' 
+## REGION_NAME_CHANGE - Replace all '(something)' from a string to '(other)'
 ## used to convert like '(type 7)' or '(and vicinity)' from
 ## Region Names to '(area)'
 ## EXAMPLE
@@ -1075,7 +1075,7 @@ $$
 DELIMITER ;
 
 #########################################################################
-## REPLACE_ONLY_FIRST -Replace ONLY the first occurence of a string with 
+## REPLACE_ONLY_FIRST -Replace ONLY the first occurence of a string with
 ## the given substring
 ##
 ## EXAMPLE
@@ -1113,9 +1113,9 @@ CREATE FUNCTION HOTELS_IN_REGION(input INT)
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
     SELECT GROUP_CONCAT(regioneanhotelidmapping.EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
-    LEFT JOIN eanprod.activepropertybusinessmodel
-    ON regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
+    FROM   regioneanhotelidmapping
+    LEFT JOIN activepropertybusinessmodel
+    ON regioneanhotelidmapping.EANHotelID = activepropertybusinessmodel.EANHotelID
     WHERE regioneanhotelidmapping.RegionID = input ORDER BY SequenceNumber INTO @MyRetList;
     RETURN @MyRetList;
 END;
@@ -1135,7 +1135,7 @@ CREATE FUNCTION HOTELS_IN_REGION_COUNT(input INT)
     RETURNS INT
 BEGIN
     SELECT COUNT(EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
+    FROM   regioneanhotelidmapping
     WHERE  RegionID = input INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END;
@@ -1157,9 +1157,9 @@ CREATE FUNCTION HOTELS_IN_REGION_LIST(input_array TEXT)
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
     SELECT GROUP_CONCAT(DISTINCT regioneanhotelidmapping.EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
-    LEFT JOIN eanprod.activepropertybusinessmodel
-    ON regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
+    FROM   regioneanhotelidmapping
+    LEFT JOIN activepropertybusinessmodel
+    ON regioneanhotelidmapping.EANHotelID = activepropertybusinessmodel.EANHotelID
     WHERE FIND_IN_SET(regioneanhotelidmapping.RegionID,input_array) ORDER BY SequenceNumber INTO @MyRetList;
     RETURN @MyRetList;
 END$$
@@ -1178,7 +1178,7 @@ CREATE FUNCTION HOTELS_IN_REGION_LIST_COUNT(input_array TEXT)
     RETURNS INT
 BEGIN
     SELECT COUNT(DISTINCT EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
+    FROM   regioneanhotelidmapping
     WHERE  FIND_IN_SET(RegionID,input_array) INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END$$
@@ -1199,7 +1199,7 @@ CREATE FUNCTION REGIONS_FOR_HOTEL(input INT)
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
     SELECT GROUP_CONCAT(RegionID)
-    FROM   eanprod.regioneanhotelidmapping
+    FROM   regioneanhotelidmapping
     WHERE  EANHotelID = input INTO @MyRetList;
     RETURN @MyRetList;
 END;
@@ -1219,7 +1219,7 @@ CREATE FUNCTION REGIONS_FOR_HOTEL_COUNT(input INT)
     RETURNS INT
 BEGIN
     SELECT COUNT(RegionID)
-    FROM   eanprod.regioneanhotelidmapping
+    FROM   regioneanhotelidmapping
     WHERE  EANHotelID = input INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END;
@@ -1233,7 +1233,7 @@ DROP FUNCTION IF EXISTS SORT_LIST;
 DELIMITER $$
 CREATE FUNCTION SORT_LIST(inString TEXT) RETURNS TEXT
 BEGIN
-	DECLARE delim CHAR(1) DEFAULT ','; 
+	DECLARE delim CHAR(1) DEFAULT ',';
 	DECLARE strings INT DEFAULT 0;
   	DECLARE forward INT DEFAULT 1;
   	DECLARE backward INT;
@@ -1275,7 +1275,7 @@ DROP FUNCTION IF EXISTS SORT_ID_LIST;
 DELIMITER $$
 CREATE FUNCTION SORT_ID_LIST(inString TEXT) RETURNS TEXT
 BEGIN
-	DECLARE delim CHAR(1) DEFAULT ','; 
+	DECLARE delim CHAR(1) DEFAULT ',';
 	DECLARE strings INT DEFAULT 0;
   	DECLARE forward INT DEFAULT 1;
   	DECLARE backward INT;

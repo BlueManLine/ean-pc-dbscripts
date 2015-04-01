@@ -4,7 +4,7 @@
 ## BE CAREFUL AS IT WILL ERASE THE EXISTING DATABASE  ##
 ## YOU CAN USE SECTIONS OF IT TO RE-CREATE TABLES     ##
 ## WILL CREATE USER: eanuser / expedia                ##
-## table names are lowercase so it will work  in all  ## 
+## table names are lowercase so it will work  in all  ##
 ## platforms the same.                                ##
 ########################################################
 
@@ -66,8 +66,8 @@ BEGIN
  TRUNCATE TABLE fasttextsearch;
 ## TYPE 'C'=Cities
 ## short down 'United States of America' for 'USA'
- 	INSERT INTO fasttextsearch (Name, SearchBy, Type) 
-  	SELECT REPLACE(RegionName,'United States of America', 'USA') AS Name, RegionName AS SearchBy, 'C' AS Type 
+ 	INSERT INTO fasttextsearch (Name, SearchBy, Type)
+  	SELECT REPLACE(RegionName,'United States of America', 'USA') AS Name, RegionName AS SearchBy, 'C' AS Type
   	FROM eanprod.citycoordinateslist;
 
 
@@ -80,13 +80,13 @@ BEGIN
 	JOIN eanprod.parentregionlist
 	ON eanprod.airportcoordinateslist.MainCityID = eanprod.parentregionlist.RegionID;
 
-## TYPE 'L'=Landmarks  
-INSERT INTO fasttextsearch (Name, SearchBy, Type) 
-  SELECT RegionNameLong AS Name, CONCAT(Latitude, "," , Longitude) AS SearchBy, 'L' AS Type 
+## TYPE 'L'=Landmarks
+INSERT INTO fasttextsearch (Name, SearchBy, Type)
+  SELECT RegionNameLong AS Name, CONCAT(Latitude, "," , Longitude) AS SearchBy, 'L' AS Type
   FROM eanprod.pointsofinterestcoordinateslist;
 
 ## TYPE 'P'=HotelID
- INSERT INTO fasttextsearch (Name, SearchBy, Type) 
+ INSERT INTO fasttextsearch (Name, SearchBy, Type)
   SELECT Name, EANHotelID AS SearchBy,'P' AS Type FROM eanprod.activepropertylist;
 
 END
@@ -95,7 +95,7 @@ DELIMITER ;
 
 ## using the World eanextras.airports
 ## if you filter to only include type_large and _medium, result set is similar to EAN
-##INSERT INTO fasttextsearch (Name, SearchBy, Type) 
+##INSERT INTO fasttextsearch (Name, SearchBy, Type)
 ##  SELECT AirportName AS Name, CONCAT(Latitude, "," , Longitude) AS SearchBy, "3" AS Type FROM eanextras.airports where AirportType = 'large_airport' or AirportType = 'medium_airport';
 
 ########################################################
@@ -105,7 +105,7 @@ DELIMITER ;
 ## it is about 25K records long
 ## This file could be joined to the regular EAN Airports
 ## using the IATACode file, the normal 3x letters code
-## 
+##
 ## This table include Small, Medium and Large Airports
 ## it includes the ISO Country, Region and also Municipality
 DROP TABLE IF EXISTS airports;
@@ -147,14 +147,14 @@ DELIMITER $$
 CREATE PROCEDURE sp_airport_from_ourairports(IN lat double,lon double,countrycode VARCHAR(2),maxrec INT)
 BEGIN
 SET @s = CONCAT('SELECT IATACode,AirportName,ISOCountry,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
-				' FROM eanextras.airports AS a ',
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
+				' FROM airports AS a ',
 				' WHERE ISOCountry=','\'',countrycode,'\'',' AND AirportType=\'large_airport\' AND IATACode<>\'\' AND ScheduledService=\'yes\'',
                 ' ORDER BY distance ASC LIMIT ',maxrec,';');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -190,7 +190,7 @@ CREATE TABLE regions
 
 
 ## New ChainList Link table that will include the info for GDS and EEM (Venere) types
-## it is created by running the stored procedure: 
+## it is created by running the stored procedure:
 DROP TABLE IF EXISTS chainlistlink;
 CREATE TABLE chainlistlink (
   EANHotelID int(11) NOT NULL,
@@ -248,12 +248,12 @@ CREATE PROCEDURE sp_fill_chainlistlink()
 BEGIN
  TRUNCATE TABLE chainlistlink;
 ## insert the ones we allready got
- INSERT INTO chainlistlink (EANHotelID, ChainCodeID) 
-	SELECT EANHotelID, ChainCodeID FROM eanprod.activepropertylist 
+ INSERT INTO chainlistlink (EANHotelID, ChainCodeID)
+	SELECT EANHotelID, ChainCodeID FROM eanprod.activepropertylist
 	WHERE TRIM(IFNULL(ChainCodeID,''));
- INSERT INTO chainlistlink (EANHotelID, ChainCodeID) 
+ INSERT INTO chainlistlink (EANHotelID, ChainCodeID)
 	SELECT activepropertylist.EANHotelID, chainlist.ChainCodeID
-	FROM eanprod.activepropertylist 
+	FROM eanprod.activepropertylist
 	INNER JOIN eanprod.chainlist ON CONCAT(' ',LOWER(activepropertylist.Name),' ')
 	LIKE BINARY CONCAT('% ',LOWER(eanprod.chainlist.ChainName),' %')
 	WHERE (TRIM(IFNULL(activepropertylist.ChainCodeID,'')) = '')
@@ -390,7 +390,7 @@ CREATE INDEX idx_expediaid ON propertyidcrossreference(ExpediaID);
 ##  2: Expedia Collect hotels
 ##  3: Sabre hotels
 ##  9: Expedia Collect condos
-## 10: Worldspan hotels 
+## 10: Worldspan hotels
 ## 13: Expedia.com properties
 ## 14: Venere.com properties
 DROP TABLE IF EXISTS propertysuppliermapping;
@@ -423,7 +423,7 @@ FeatureCode varchar(10),
 CountryCode  char(2),
 AlternativeCountryCode varchar(60),
 AdminCode1 varchar(20),
-AdminCode2 varchar(80), 
+AdminCode2 varchar(80),
 AdminCode3 varchar(20),
 AdminCode4 varchar(20),
 Population BIGINT,
@@ -454,7 +454,7 @@ FeatureCode varchar(10),
 CountryCode  char(2),
 AlternativeCountryCode varchar(60),
 AdminCode1 varchar(20),
-AdminCode2 varchar(80), 
+AdminCode2 varchar(80),
 AdminCode3 varchar(20),
 AdminCode4 varchar(20),
 Population BIGINT,
@@ -482,16 +482,16 @@ CREATE PROCEDURE sp_geonames_from_point(IN lat double,lon double, maxdist int)
 BEGIN
 SELECT GeoNameID,AsciiName,Name,CountryCode,FeatureClass,FeatureCode,AdminCode1,AdminCode2,AdminCode3,AdminCode4,Latitude,Longitude,
 # this calculate the distance from the given longitude, latitude
-    round( sqrt( 
-        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) + 
-        (POW(a.Longitude - lon, 2) * 53.1 * 53.1) 
+    round( sqrt(
+        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) +
+        (POW(a.Longitude - lon, 2) * 53.1 * 53.1)
      )) AS distance
-FROM geonames AS a 
+FROM geonames AS a
 WHERE 1=1
 HAVING distance < maxdist
 ORDER BY distance ASC;
 # to use LIMIT you need to use a prepared statement to avoid errors
-END 
+END
 $$
 DELIMITER ;
 
@@ -505,16 +505,16 @@ DELIMITER $$
 CREATE PROCEDURE sp_geonames_from_point_featcode(IN lat double,lon double, maxdist int, featcode varchar(60))
 BEGIN
 SET @s = CONCAT('SELECT GeoNameID,AsciiName,Name,CountryCode,FeatureClass,FeatureCode,AdminCode1,AdminCode2,AdminCode3,AdminCode4,Latitude,Longitude,',
-		' sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+', 
+		' sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+',
 		'(POW(a.Longitude-',lon,',2)*53.1*53.1)) AS distance',
 		' FROM geonames as a WHERE FeatureCode=\'',featcode,
 		'\' HAVING distance < ',maxdist,
 		' ORDER BY distance ASC;');
 Select @s;
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -565,14 +565,14 @@ BEGIN
     IF done THEN
       LEAVE read_loop;
     END IF;
-   SET @s = CONCAT('INSERT INTO eanextras.venere_airports (EANHotelID,AirportCode,Distance) ',
+   SET @s = CONCAT('INSERT INTO venere_airports (EANHotelID,AirportCode,Distance) ',
             'VALUES (SELECT ',cEANHotelID,' as EANHotelID,AirportCode,',
-                ' round( sqrt((POW(a.Latitude-',cLatitude,',2)*68.1*68.1)+(POW(a.Longitude-',cLongitude,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',cLatitude,',2)*68.1*68.1)+(POW(a.Longitude-',cLongitude,',2)*53.1* 53.1))) AS distance',
 				 ' FROM eanprod.airportcoordinateslist AS a ',
 				 ' WHERE CountryCode=','\'',cCountryCode,'\'',
                 ' ORDER BY distance ASC LIMIT 2);');
-	PREPARE stmt1 FROM @s; 
-	EXECUTE stmt1; 
+	PREPARE stmt1 FROM @s;
+	EXECUTE stmt1;
 	DEALLOCATE PREPARE stmt1;
   END LOOP;
   CLOSE cur;
